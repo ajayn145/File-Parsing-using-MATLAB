@@ -1,0 +1,233 @@
+%MATLAB PROGRAM PARSE THE NASA THERMO FILE
+close all
+clear all
+clc
+
+
+%FILE IS OPENED TO READ
+fid = fopen('THERMO.DAT','r');                     % the file is opened by MATLAB and asked to read 
+% HEADER OF THE FILE                 
+Header = fgetl(fid);                               % for reading the header of the file as a string.               
+
+
+% GLOBAL TEMPERATURE VALUES                             
+global_temp_line = fgetl(fid);                         % for reading the global temperature values as a string
+a1 = strsplit(global_temp_line,' ');
+global_low_temp = str2num(a1{1});
+global_mid_temp = str2num(a1{2});
+global_high_temp = str2num(a1{3});
+
+
+% COMMENTS NEEDED TO BE ELIMAINATED
+comment_1 = fgetl(fid);                                %
+comment_2 = fgetl(fid);                                % the comments are eliminated by means of line 14 to 16
+comment_3 = fgetl(fid);                                %
+
+ 
+
+% TOTAL NUMBER OF SPECIES IN THE FILE
+coef_line=0;                                          % the initial coefficent line of a species is assigned 0
+while ~feof(fid)                                      % the while loop executes till the end of the file is reached
+    line=fgetl(fid);                                  % the position indicator right now is at the first species (i.e.oxygen (O). From there the whole line is  returned 
+    a=sscanf(line,'%c');                              % the whole text is read from the current position (i.e. oxygen) till the the last line and stored as a coloun vector 
+    
+    c=a(1:3);                                         % prints out the first 3 charactes of each line
+    d='END';                                          % variable d is assigned the string 'END'
+    
+    if c==d                                           % checking whether the position indicator HAS reached the 'END' or not, as it is end of the file 'THERMO.DAT'
+        break                                         % if the if loop is satisfied break out of the if loop
+    end                                               % the if loop ends
+    coef_line=coef_line+1;                            % each time the while loop is executed the variable coef_line acts as a counter
+end                                                   % while loop ends
+Total_Number_of_Species=(coef_line)/4;                % for each species the coefficents are arranged in 4 lines (1st line-species name & 2nd,3rd,4th lines are coefficent values).Hence divide by 4 to get the total no: of species
+           
+  
+ 
+
+% EXTRACTING THE COEFFICENTS
+ 
+frewind(fid)                                                        % the position identifier is brought to begining
+for i=1:5                                                           %
+    [line] = fgetl(fid);                                            % the for loop to neglect the first 5 lines of the file
+    i=i+1;                                                          %
+end                                                                 %
+
+ 
+for i=1:Total_Number_of_Species                                     % for loop to extract the 14 coefficents of all the species                 
+    
+    line1 = fgetl(fid);                                             % the 6th line from the file is read for the first iteration (i.e i=1) and stored in 'line1'
+    split1 = strsplit(line1,' ');                                   % the 6th line is split based on the delimiter ' ' and the right side is a cell aray
+    species_na = split1(1);                                         % the first element of the cell array is stored in the variable 'species_na'
+    species_name = char(species_na);                                % the cell array is converted into character array and stored in the variable 'species_name'
+    
+    split2 = strsplit(line1,'G ');                                  % the line 6th is split to find the local temperatures using 'G ' as the delimitter
+    local_temp = str2num(split2{2});                                % we get a row vector of size 1 by 2 matrix. The element (1,2)of row matrix is asigned to local_temp
+    local_low_temperature = local_temp(1);                          % this row matrix also contains 3 elements which are basically cell array. Hence they have to converted to numbers before using
+    local_mid_temperature = local_temp(3);
+    local_high_temperature = local_temp(2);
+    
+    line2 = fgetl(fid);                                             % the 2nd line of the species is read and stored in line2
+    coeff1to5 = findstr(line2,'E');                                 % the 2nd line is in string format and the position of string 'E' is calculated
+    A1 = str2num(line2(1:coeff1to5(1)+3));                          % the first coefficent is calculated
+    A2 = str2num(line2(coeff1to5(1)+4:coeff1to5(2)+3));             % the second coefficent is calculated
+    A3 = str2num(line2(coeff1to5(2)+4:coeff1to5(3)+3));             % the third coefficent is calculated
+    A4 = str2num(line2(coeff1to5(3)+4:coeff1to5(4)+3));             % the fourth coefficent is calculated
+    A5 = str2num(line2(coeff1to5(4)+4:coeff1to5(5)+3));             % the fifth coefficent is calculated
+    
+    line3 = fgetl(fid);                                             % the 3rd line of the species is read and stored in line3
+    coeff6to10 = findstr(line3,'E');                                % the 3rd line is in string format and the position of string 'E' is calculated
+    A6 = str2num(line3(1:coeff6to10(1)+3));                         % the sixth coefficent is calculated
+    A7 = str2num(line3(coeff6to10(1)+4:coeff6to10(2)+3));           % the seventh coefficent is calculated
+    A8 = str2num(line3(coeff6to10(2)+4:coeff6to10(3)+3));           % the eighth coefficent is calculated
+    A9 = str2num(line3(coeff6to10(3)+4:coeff6to10(4)+3));           % the ninth coefficent is calculated
+    A10 = str2num(line3(coeff6to10(4)+4:coeff6to10(5)+3));          % the tenth coefficent is calculated
+    
+    line4 = fgetl(fid);                                             % the 4th line of the species is read and stored in line4
+    coeff11to14 = findstr(line4,'E');                               % the 4th line is in string format and the position of string 'E' is calculated
+    A11 = str2num(line4(1:coeff11to14(1)+3));                       % the eleventh coefficent is calculated
+    A12 = str2num(line4(coeff11to14(1)+4:coeff11to14(2)+3));        % the twelvth coefficent is calculated
+    A13 = str2num(line4(coeff11to14(2)+4:coeff11to14(3)+3));        % the thirteenth coefficent is calculated
+    A14 = str2num(line4(coeff11to14(3)+4:coeff11to14(4)+3));        % the forteenth coefficent is calculated
+                                                                 
+ 
+
+
+% CALLING FUNCTIONS ENTHALPY, SPECIFIC HEAT AND ENTROPY
+T = linspace(200,6000,500);                                                                         
+cp = specific_heat(A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12,A13,A14,local_mid_temperature);          % the function 'specific_enthalpy' is called
+H = enthalpy(A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12,A13,A14,local_mid_temperature);                % the function 'enthalpy' is called
+S = entropy(A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12,A13,A14,local_mid_temperature);                 % the function 'entropy' is called
+
+% CALCULATION OF MOLECULAR MASS
+MM= molecular_mass(species_name);                                                                  % the molecular mass function is called
+
+
+% CREATING A FOLDER TO SAVE THE PLOTS
+mkdir(['C:UsersappuDesktopAJAYS NASA PARSINGSPECIES',species_name]);                                    % creating the directory (i.e.file path) and a folder named 'species'
+
+  
+% PLOTTING
+figure(1)                                                     % new figure 1 window is opened
+plot(T,cp,'linewidth',3,'color','m')                          % the plot between tempeature & specific heat 
+xlabel('TEMPERATURE (K)')       N                              % x-axis is labelled
+ylabel('SPECIFIC HEAT (kJ/Kg k)')                             % y-axis is labelled
+title({'Temperature VS Specific Heat',['Species - ',species_name]})                                           % respective species name is put as the title
+grid on
+
+figure(2)                                                     % new figure 2 window is opened
+plot(T,H,'linewidth',3,'color','r')                           % the plot between tempeature & enthalpy 
+xlabel('TEMPERATURE (K)')                                     % x-axis is labelled
+ylabel('ENTHALPY (KJ)')                                       % y-axis is labelled
+title({'Temperature VS Enthalpy',['Species - ',species_name]})                                           % respective species name is put as the title
+grid on
+
+figure(3)                                                     % new figure 3 window is opened             
+plot(T,S,'linewidth',3,'color','b')                           % the plot between tempeature & entropy 
+xlabel('TEMPERATURE (K)')                                     % x-axis is labelled
+ylabel('ENTROPY (KJ/K)')                                      % y-axis is labelled
+title({'Temperature VS Entropy',['Species - ',species_name]})                                           % respective species name is put as the title
+grid on
+
+
+
+% CHANGING THE DIRECTORY
+cd(['C:UsersappuDesktopAJAYS NASA PARSINGSPECIES',species_name]);                                   % this statement navigates the whole program to the directory and folder 'species'
+
+% SAVING THE PLOTS
+saveas(1,'Temperature vs Specific heat','jpg');                 % the plots of Temperature vs Specific heat is saved as jpg format 
+saveas(2,'Temperature vs Enthalpy','jpg');                      % the plots of Temperature vs Enthalpy is saved as jpg format 
+saveas(3,'Temperature vs Entropy','jpg');                       % the plots of Temperature vs Entropy is saved as jpg format
+cd ..                                                           % this command bring back the whole program back to where it was
+
+end                                                             % the for loop ends
+
+fclose(fid)                                                     % the file 'THERMO.DAT' is closed
+
+
+
+
+
+
+% CALCULATION OF SPECIFIC HEAT OF EACH SPECIES
+
+function cp = specific_heat(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,local_mid)
+
+         T = linspace(200,6000,500);                                                      % the temperature array is defined
+
+         if(T>local_mid)                                                                  % specific heat formula to be used when the temperature is more than local mid temperature
+            cp = (a1 + (a2*T) + (a3*T.^2) + (a4*T.^3) + (a5*T.^4))*8.314;
+         else
+            cp = (a8 + (a9*T) + (a10*T.^2) + (a11*T.^3) + (a12*T.^4))*8.314;              %  to be used when the temperature is less than local mid temperature
+         end
+
+end
+
+
+
+
+
+
+% CALCULATION OF entropy OF EACH SPECIES
+
+
+function S = entropy(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,local_mid)
+
+T = linspace(200,6000,500);                                                                         % the temperature array is defined
+
+if(T>local_mid)
+   S = ((a1*log(T)) + (a2.*T) + (a3*T.^2./2) + (a4*T.^3./T) + (a5*T.^4./4) + a7)*8.314;             % entropy formula to be used when the temperature is more than local mid temperature
+else
+   S = ((a8*log(T)) + (a9.*T) + (a10*T.^2./2) + (a11*T.^3./T) + (a12*T.^4./4) + a13)*8.314;         % entropy formula to be used when the temperature is less than local mid temperature
+end
+
+
+
+
+end
+
+
+
+
+
+
+% CALCULATIONS FOR FINDING MOLECULAR MASS OF SPECIES
+
+function [mm] = molecular_mass(species_name)                                                      % molecular_mass function definition with species_name as the input is defined                                                        
+
+species =  upper(species_name);                                                                   % the input arguement is converted to uppercase letters            
+constituents = ['H','C','N','O','A','S'];                                                         % the species element array is defined
+atomic_weights = [1.00794 12.0107 14.0067 15.9994 39.948 32.065];                                 % the atomic weights of each element in the species is defined
+mm = 0;                                                                                           % molecular mass variable is defined as 0, initially
+u=0;
+for i=1:length(species)                                                                           % for loop till the species length
+    for j=1:length(constituents)                                                                  % for loop is for comparing each and every elelments of species with the constituent array
+        if (strcmp(species(i),constituents(j)))                                                   % if loop to check the each of species element with
+            mm = mm + atomic_weights(j);
+            u=j;
+        end
+    end
+end
+
+
+    n = str2num(species(i));
+    if n>1
+        mm = mm + atomic_weights(u)*(n-1);
+    end
+%end
+
+fprintf('The molecular mass of %s is %0.0fn',species,mm)
+
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
